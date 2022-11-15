@@ -1,27 +1,40 @@
 import * as React from "react"
-import { GetStaticPathsResult, GetStaticPropsResult } from "next"
+import { GetStaticPathsContext, GetStaticPathsResult, GetStaticPropsResult } from "next"
 import Head from "next/head"
-import { DrupalNode } from "next-drupal"
+import { DrupalMenuLinkContent, DrupalNode } from "next-drupal"
 
 import { drupal } from "lib/drupal"
 import { NodeArticle } from "components/node--article"
 import { NodeBasicPage } from "components/node--basic-page"
-import { Layout } from "components/layout"
+import { Layout, LayoutProps } from "components/layout"
+import { getPrioritizedStaticPathsFromContext } from '../lib/get-prioritized-static-paths';
+import { Article } from "./types/drupal"
+import { getMenus } from "lib/get-menu"
 
-const RESOURCE_TYPES = ["node--page", "node--article"]
+// List of all the entity types handled by this route.
+export const ENTITY_TYPES = [
+  'node--page',
+  'node--article',
+  'node--person',
+  'taxonomy_term--article_type',
+  'taxonomy_term--person_type',
+  'taxonomy_term--tags',
+  'taxonomy_term--categories'
+];
 
 interface NodePageProps {
-  resource: DrupalNode
+  resource: Article,
+  menus
 }
 
-export default function NodePage({ resource }: NodePageProps) {
+export default function NodePage({ resource, menus }: NodePageProps) {
   if (!resource) return null
 
   return (
-    <Layout>
+    <Layout menus={menus}>
       <Head>
         <title>{resource.title}</title>
-        <meta name="description" content="A Next.js site powered by Drupal." />
+        <meta name="description" content="Next.js + Drupal." />
       </Head>
       {resource.type === "node--page" && <NodeBasicPage node={resource} />}
       {resource.type === "node--article" && <NodeArticle node={resource} />}
@@ -29,11 +42,19 @@ export default function NodePage({ resource }: NodePageProps) {
   )
 }
 
-export async function getStaticPaths(context): Promise<GetStaticPathsResult> {
+export async function getStaticPaths(context: GetStaticPathsContext): Promise<GetStaticPathsResult> {
+  // By limiting the number of static paths, larger sites can keep build times
+  // within a reasonable timeframe.
+  const limit = 100;
+  const paths = await getPrioritizedStaticPathsFromContext(
+    context,
+    ENTITY_TYPES,
+  );
+
   return {
-    paths: await drupal.getStaticPathsFromContext(RESOURCE_TYPES, context),
-    fallback: "blocking",
-  }
+    paths: paths.slice(0, limit),
+    fallback: 'blocking',
+  };
 }
 
 export async function getStaticProps(
@@ -52,7 +73,7 @@ export async function getStaticProps(
   let params = {}
   if (type === "node--article") {
     params = {
-      include: "field_image,uid",
+      include: "field_article_image.image,uid,field_tags,field_site,field_display_author",
     }
   }
 
@@ -83,6 +104,7 @@ export async function getStaticProps(
   return {
     props: {
       resource,
+      menus: await getMenus(context),
     },
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "basic-starter",
-  "version": "1.7.1",
-  "private": true,
+  "name": "drupal-next-demo",
+  "version": "1.0.0",
+  "private": false,
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.13",
     "@tailwindcss/typography": "^0.5.2",
+    "drupal-jsonapi-params": "^2.1.0",
     "next": "^12.2.3",
     "next-drupal": "^1.5.0",
     "react": "^17.0.2",

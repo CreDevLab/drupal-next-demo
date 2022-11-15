@@ -1,7 +1,6 @@
-import Image from "next/image"
 import Link from "next/link"
 import { DrupalNode } from "next-drupal"
-
+import { MediaImage } from "components/media--image"
 import { absoluteUrl, formatDate } from "lib/utils"
 
 interface NodeArticleTeaserProps {
@@ -17,25 +16,23 @@ export function NodeArticleTeaser({ node, ...props }: NodeArticleTeaserProps) {
         </a>
       </Link>
       <div className="mb-4 text-gray-600">
-        {node.uid?.display_name ? (
+        {node.field_display_author?.title ? (
           <span>
             Posted by{" "}
-            <span className="font-semibold">{node.uid?.display_name}</span>
+            <span className="font-semibold">{node.field_display_author?.title}</span>
           </span>
         ) : null}
         <span> - {formatDate(node.created)}</span>
       </div>
-      {node.field_image && (
-        <figure className="my-4">
-          <Image
-            src={absoluteUrl(node.field_image.uri.url)}
-            width={768}
-            height={480}
-            layout="responsive"
-            objectFit="cover"
-            alt={node.field_image.resourceIdObjMeta.alt}
+      {node.field_article_image && (
+        <div className="my-6 overflow-hidden rounded-md">
+          <MediaImage
+            media={node.field_article_image}
+            priority
+            sizes="(min-width: 768px) 625px, 100vw"
+            imageStyle="coh_medium"
           />
-        </figure>
+        </div>
       )}
       <Link href={node.path.alias} passHref>
         <a className="inline-flex items-center px-6 py-2 border border-gray-600 rounded-full hover:bg-gray-100">

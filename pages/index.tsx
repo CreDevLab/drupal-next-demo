@@ -5,19 +5,21 @@ import { DrupalNode } from "next-drupal"
 import { drupal } from "lib/drupal"
 import { Layout } from "components/layout"
 import { NodeArticleTeaser } from "components/node--article--teaser"
+import { getMenus } from "lib/get-menu"
 
 interface IndexPageProps {
-  nodes: DrupalNode[]
+  nodes: DrupalNode[],
+  menus
 }
 
-export default function IndexPage({ nodes }: IndexPageProps) {
+export default function IndexPage({ nodes, menus }: IndexPageProps) {
   return (
-    <Layout>
+    <Layout menus={menus}>
       <Head>
-        <title>Next.js for Drupal</title>
+        <title>Drupal + Next.js</title>
         <meta
           name="description"
-          content="A Next.js site powered by a Drupal backend."
+          content="Drupal + Next.js."
         />
       </Head>
       <div>
@@ -46,9 +48,9 @@ export async function getStaticProps(
     {
       params: {
         "filter[status]": 1,
-        "fields[node--article]": "title,path,field_image,uid,created",
-        include: "field_image,uid",
-        sort: "-created",
+        "fields[node--article]": "title,path,field_article_image,uid,created,field_display_author",
+        include: "field_article_image.image,field_display_author",
+        sort: "-created"
       },
     }
   )
@@ -56,6 +58,7 @@ export async function getStaticProps(
   return {
     props: {
       nodes,
+      menus: await getMenus(context),
     },
   }
 }
